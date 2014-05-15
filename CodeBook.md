@@ -17,6 +17,7 @@ Read file activity_labels.txt
 #4 appropriately labels the data set with descriptive activity names. 
 
 all attributes and activity names are converted to lower case and special characters are deleted
+
 merges instance data frame with subject IDs data frame and activity IDs data frame. The latest data frames were generated in step #1
 
 First column is subject ID, econd column is activity name and remaining columns are actual measurements
