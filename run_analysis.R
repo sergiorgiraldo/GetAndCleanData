@@ -22,38 +22,38 @@ features <- read.table("UCI_HAR_Dataset/features.txt")
 onlyMeanAndStd <- grep("-mean\\(\\)|-std\\(\\)", features[, 2])
 X <- X[, onlyMeanAndStd]
 names(X) <- features[onlyMeanAndStd, 2]
-names(X) <- gsub("\\(|\\)", "", names(X))
-names(X) <- tolower(names(X))  
+names(X) <- gsub('\\(|\\)',"", names(X), perl = TRUE)
+names(X) <- gsub('\\-',"", names(X), perl = TRUE)
+names(X) <- gsub('\\,',"", names(X), perl = TRUE)
 
 # 3. Uses descriptive activity names to name the activities in the data set
-
-activities <- read.table("UCI_HAR_Dataset/activity_labels.txt")
-activities[, 2] = gsub("_", "", tolower(as.character(activities[, 2])))
-Y[,1] = activities[Y[,1], 2]
-names(Y) <- "activity"
-
 # 4. Appropriately labels the data set with descriptive activity names.
 
-names(SUBJECT) <- "subject"
-cleaned <- cbind(SUBJECT, Y, X)
-write.table(cleaned, "full_data_set.txt")
+activities <- read.table("UCI_HAR_Dataset/activity_labels.txt")
+activities[, 2] = gsub('\\_', "", activities[, 2], perl = TRUE)
+Y[,1] = activities[Y[,1], 2]
+names(Y) <- paste("activity")
+
+names(SUBJECT) <- paste("subject")
+
+merged <- cbind(SUBJECT, Y, X)
 
 # 5. Creates a 2nd, independent tidy data set with the average of each variable for each activity and each subject.
 
 uniqueSubjects = unique(SUBJECT)[,1]
-numSubjects = length(unique(SUBJECT)[,1])
+numSubjects = length(uniqueSubjects)
 numActivities = length(activities[,1])
-numCols = dim(cleaned)[2]
-result = cleaned[1:(numSubjects*numActivities), ]
+numCols = dim(merged)[2]
+result = merged[1:(numSubjects*numActivities), ]
 
-row = 1
+index = 0
 for (subject in 1:numSubjects) {
 	for (activity in 1:numActivities) {
-		result[row, 1] = uniqueSubjects[subject]
-		result[row, 2] = activities[activity, 2]
-		tmp <- cleaned[cleaned$subject==subject & cleaned$activity==activities[activity, 2], ]
-		result[row, 3:numCols] <- colMeans(tmp[, 3:numCols])
-		row = row+1
+		index = index + 1
+		result[index, 1] = uniqueSubjects[subject]
+		result[index, 2] = activities[activity, 2]
+		filtered <- merged[merged$subject==subject & merged$activity==activities[activity, 2], ]
+		result[index, 3:numCols] <- colMeans(filtered[, 3:numCols])
 	}
 }
-write.table(result, "tidy_data_set.txt")
+write.table(result, "tidy_data_set.txt", sep="\t")
